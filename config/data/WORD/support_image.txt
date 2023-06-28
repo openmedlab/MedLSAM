@@ -1,0 +1,5 @@
+data/WORD/imagesTr/word_0010.nii.gz
+data/WORD/imagesTr/word_0036.nii.gz
+data/WORD/imagesTr/word_0053.nii.gz
+data/WORD/imagesTr/word_0064.nii.gz
+data/WORD/imagesTr/word_0113.nii.gz

@@ -1,0 +1,11 @@
+# Ignore Python compiled files
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+
+# Ignore log files
+*.log
+
+# Ignore pth files
+*.pth

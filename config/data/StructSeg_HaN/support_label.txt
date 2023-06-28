@@ -1,0 +1,5 @@
+data/Task1_HaN_OAR/HaN_OAR/1/label.nii.gz
+data/Task1_HaN_OAR/HaN_OAR/10/label.nii.gz
+data/Task1_HaN_OAR/HaN_OAR/11/label.nii.gz
+data/Task1_HaN_OAR/HaN_OAR/12/label.nii.gz
+data/Task1_HaN_OAR/HaN_OAR/13/label.nii.gz
