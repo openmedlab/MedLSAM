@@ -171,6 +171,13 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_con
 - MedLSAM (Localize and segment any anatomy target): MedLSAM automatically calculates and saves the mean Dice Similarity Coefficient (DSC) along with the standard deviation for each category in a .txt file. These files are stored under the result/dsc directory.
 
 
+<div align="center">
+  <img src="fig/structseg_dsc.png" width="90%">
+</div>
+<div align="center">
+  <img src="fig/word_dsc.png" width="90%">
+</div>
+
 ## To do list
 - [ ] Support scribble prompts
 
