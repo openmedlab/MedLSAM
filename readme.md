@@ -140,7 +140,7 @@ Each of the parameters is explained as follows:
 - `seg_png_save_path`: The path to save the segmentation results in .png format, **only required for MedLSAM**.
 - `net_type`: The type of vision transformer model to be used, **only required for MedLSAM**. By default, this is set to vit_b.
 - `medlam_load_path`: The path to load the pretrained MedLAM model weights.
-- `vit_load_path`: The path to load the pretrained vision transformer model weights, **only required for MedLSAM**.
+- `vit_load_path`: The path to load the pretrained vision transformer model weights, **only required for MedLSAM**. You can change it to `checkpoint/sam_vit_b_01ec64.pth` to use the SAM model as segmentation basis.
 
 ### Inference
 - MedLAM (Localize any anatomy target)
@@ -159,6 +159,7 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file path/to/your/te
 Example:
 ```bash
 CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_config/test_structseg_medlam_medsam.txt
+CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_config/test_structseg_medlam_sam.txt
 ```
 
 ### Results
