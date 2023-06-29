@@ -130,7 +130,7 @@ vit_load_path  = checkpoint/medsam_20230423_vit_b_0.0.1.pth
 ```
 Each of the parameters is explained as follows:
 
-- `support_image_ls`: The path to the list of support image files.
+- `support_image_ls`: The path to the list of support image files.  It is recommended to use between 3 and 10 support images.
 - `support_label_ls`: The path to the list of support label files.
 - `query_image_ls`: The path to the list of query image files.
 - `query_label_ls`: The path to the list of query label files.
