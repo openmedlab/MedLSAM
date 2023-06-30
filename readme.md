@@ -150,6 +150,7 @@ CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file path/to/your/tes
 Example:
 ```bash
 CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file config/test_config/test_structseg_medlam.txt
+CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file config/test_config/test_word_medlam.txt
 ```
 
 - MedLSAM (Localize and segment any anatomy target)
@@ -181,7 +182,7 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_con
 
 ## To do list
 - [ ] Support scribble prompts
-
+- [ ] Support MobliSAM
 ## 🙋‍♀️ Feedback and Contact
 
 - lyc745307452@gmail.com

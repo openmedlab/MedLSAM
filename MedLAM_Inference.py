@@ -27,8 +27,6 @@ ana_det = AnatomyDetection(args.config_file)
 
 nii_pathes = read_file_list(config_file['data']['query_image_ls'])
 gt_pathes = read_file_list(config_file['data']['query_label_ls'])
-os.makedirs(config_file['data']['seg_png_save_path'], exist_ok=True)
-os.makedirs(config_file['data']['seg_save_path'], exist_ok=True)
 lam_iou_dic = {}
 
 for id in trange(len(nii_pathes)):
@@ -39,7 +37,7 @@ for id in trange(len(nii_pathes)):
         extreme_cor_dic, corner_cor_dic, ori_shape = ana_det.get_extreme_corner(nii_path)
         for key in corner_cor_dic.keys():
             gt_corner = get_bound_coordinate(1*(gt_mask==int(key)))
-            print('gt corner:', gt_corner, 'predict corner:',corner_cor_dic[key])
+            print('file', nii_path, 'gt corner:', gt_corner, 'predict corner:',corner_cor_dic[key])
             if key not in lam_iou_dic.keys():
                 lam_iou_dic[key] = [iou(corner_cor_dic[key], gt_corner)]
             else:

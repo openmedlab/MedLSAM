@@ -3,8 +3,8 @@
 from __future__ import absolute_import, print_function
 import os
 import sys
-sys.path.append(os.path.abspath(__file__))  #返回当前.py文件的绝对路径
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))   #当前文件的绝对路径目录，不包括当前 *.py 部分，即只到该文件目录
+sys.path.append(os.path.abspath(__file__))  
+sys.path.append(os.path.dirname(os.path.abspath(__file__))) 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data_process.data_process_func import *
 from MedLAM.detection_functions import *
@@ -21,7 +21,7 @@ def predic_corner_cor(RD, img_path, patch_size, iter_patch_num, random_crop):
     start_position,query_batch = [],[]
     extreme_cor_dic = {}
     corner_cor_dic = {}
-    for ii in range(iter_patch_num): # 多次随机裁减预测距离，最终取平均
+    for ii in range(iter_patch_num): # rancom crop several times, and average the result
         sample = random_crop(query_sample)
         random_position = np.int16(sample['random_position']).squeeze()
         start_position.append(random_position)
@@ -33,7 +33,7 @@ def predic_corner_cor(RD, img_path, patch_size, iter_patch_num, random_crop):
         cur_position = relative_position + np.mean(np.asarray(start_position), axis=0) # [6, 3]
         
         middle_query_batch = []
-        cur_cor = np.round(cur_position/spacing).astype(np.int16) #像素坐标
+        cur_cor = np.round(cur_position/spacing).astype(np.int16) # pixel coordinate
         cur_cor[:,0] = np.minimum(np.maximum(cur_cor[:,0], patch_size[0]//2), sss[0]-patch_size[0]//2-1)
         cur_cor[:,1] = np.minimum(np.maximum(cur_cor[:,1], patch_size[1]//2), sss[1]-patch_size[1]//2-1)
         cur_cor[:,2] = np.minimum(np.maximum(cur_cor[:,2], patch_size[2]//2), sss[2]-patch_size[2]//2-1)
