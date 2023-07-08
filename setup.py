@@ -8,7 +8,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="medsam",
+    name="medlsam",
     version="0.0.1",
     author="Wenhui Lei",
     python_requires=">=3.9",
