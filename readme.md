@@ -209,3 +209,7 @@ If you find this repository useful, please consider citing this paper:
   year={2023}
 }
 ```
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=openmedlab/MedLSAM&type=Date)](https://star-history.com/#openmedlab/MedLSAM&Date)
