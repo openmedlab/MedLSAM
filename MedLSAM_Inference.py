@@ -173,7 +173,7 @@ for id in trange(len(nii_pathes)):
             axes[1].set_title('MedSAM: DSC={:.3f}'.format(sam_slice_dice_scores[img_id]))
             axes[1].axis('off')
             # save figure
-            fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_pad{2}_{3}.png'.format(id, key, padding, config_file['weight']['vit_load_path'].split('/')[-1].split('_')[0])))
+            fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_{2}_pad{3}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), id, key, padding)))
             # close figure
             plt.close(fig)
     except Exception:
