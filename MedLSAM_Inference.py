@@ -105,12 +105,13 @@ for id in trange(len(nii_pathes)):
     nii_path = nii_pathes[id]
     gt_path = gt_pathes[id]
     save_path = join(config_file['data']['seg_save_path'], nii_path.split('/')[-1].split('.')[0]+ id + '.npz')
-    try:
-        extreme_cor_dic, corner_cor_dic, ori_shape = ana_det.get_extreme_corner(nii_path)
-        # the order of SimpleITK is zyx, nibabel is xyz. ana_det use nibabel, so we need to reverse the order
-        ori_shape = ori_shape[::-1]
-        # then resize the corner coordinates to the corresponding coordinates in the resized image
-        for key in corner_cor_dic.keys():
+    
+    extreme_cor_dic, corner_cor_dic, ori_shape = ana_det.get_extreme_corner(nii_path)
+    # the order of SimpleITK is zyx, nibabel is xyz. ana_det use nibabel, so we need to reverse the order
+    ori_shape = ori_shape[::-1]
+    # then resize the corner coordinates to the corresponding coordinates in the resized image
+    for key in corner_cor_dic.keys():
+        try:
             corner_cor_dic[key] = [[corner_cor_dic[key][0][0], np.around(corner_cor_dic[key][0][1]*1024/ori_shape[1]), 
                                     np.around(corner_cor_dic[key][0][2]*1024/ori_shape[2])],
                                     [corner_cor_dic[key][1][0], np.around(corner_cor_dic[key][1][1]*1024/ori_shape[1]), 
@@ -176,9 +177,9 @@ for id in trange(len(nii_pathes)):
             fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_{2}_pad{3}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), id, key, padding)))
             # close figure
             plt.close(fig)
-    except Exception:
-        traceback.print_exc()
-        print('error in {}'.format(nii_path))
+        except Exception:
+            traceback.print_exc()
+            print('error in {0}, class {1}'.format(nii_path, key))
 
 #% save dice scores
 for key in config_file['data']['fg_class']:

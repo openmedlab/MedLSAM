@@ -101,10 +101,9 @@ for id in trange(len(nii_pathes)):
     nii_path = nii_pathes[id]
     gt_path = gt_pathes[id]
     save_path = join(config_file['data']['seg_save_path'], nii_path.split('/')[-1].split('.')[0] + '.npz')
-    try:
-        # then resize the corner coordinates to the corresponding coordinates in the resized image
-        for key in config_file['data']['fg_class']:
-        
+    # then resize the corner coordinates to the corresponding coordinates in the resized image
+    for key in config_file['data']['fg_class']:
+        try:
             imgs, gts = preprocess_ct(gt_path, nii_path, label_id=key, image_size=1024, gt_slice_threshold=config_file['data']['gt_slice_threshold'])
 
             sam_segs = []
@@ -160,10 +159,9 @@ for id in trange(len(nii_pathes)):
             fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_{2}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), id, key)))
             # close figure
             plt.close(fig)
-        
-    except Exception:
-        traceback.print_exc()
-        print('error in {}'.format(nii_path))
+        except Exception:
+            traceback.print_exc()
+            print('error in {0}, class {1}'.format(nii_path, key))
 
 #% save dice scores
 for key in config_file['data']['fg_class']:

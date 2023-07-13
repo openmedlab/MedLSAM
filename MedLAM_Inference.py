@@ -32,20 +32,20 @@ lam_iou_dic = {}
 for id in trange(len(nii_pathes)):
     nii_path = nii_pathes[id]
     gt_path = gt_pathes[id]
-    try:
-        gt_mask = nibabel.load(gt_path).get_fdata().transpose(2, 1, 0)
-        extreme_cor_dic, corner_cor_dic, ori_shape = ana_det.get_extreme_corner(nii_path)
-        for key in corner_cor_dic.keys():
+    
+    gt_mask = nibabel.load(gt_path).get_fdata().transpose(2, 1, 0)
+    extreme_cor_dic, corner_cor_dic, ori_shape = ana_det.get_extreme_corner(nii_path)
+    for key in corner_cor_dic.keys():
+        try:
             gt_corner = get_bound_coordinate(1*(gt_mask==int(key)))
             print('file', nii_path, 'gt corner:', gt_corner, 'predict corner:',corner_cor_dic[key])
             if key not in lam_iou_dic.keys():
                 lam_iou_dic[key] = [iou(corner_cor_dic[key], gt_corner)]
             else:
                 lam_iou_dic[key].append(iou(corner_cor_dic[key], gt_corner))
-            
-    except Exception:
-        traceback.print_exc()
-        print('error in {}'.format(nii_path))
+        except Exception:
+            traceback.print_exc()
+            print('error in {}'.format(nii_path))
 
 #% save iou as txt
 with open(join('result/iou', '{0:}.txt').format(os.path.basename(args.config_file).replace('test_','').replace('.txt','')), 'w') as f:
