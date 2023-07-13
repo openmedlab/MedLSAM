@@ -48,7 +48,7 @@ for id in trange(len(nii_pathes)):
             print('error in {}'.format(nii_path))
 
 #% save iou as txt
-with open(join('result/iou', '{0:}.txt').format(os.path.basename(args.config_file).replace('test_','').replace('.txt','')), 'w') as f:
+with open(join('result/iou', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
     for key in config_file['data']['fg_class']:
         # Check if sam_dice_scores[key] is a list or numpy array
         if isinstance(lam_iou_dic[key], (list, np.ndarray)) and len(lam_iou_dic[key]) > 0:

@@ -168,7 +168,7 @@ for key in config_file['data']['fg_class']:
     print('MedSAM DSC for class {}: {:.3f}'.format(key, np.mean(sam_dice_scores[key])))
 
 #% save dice scores as txt
-with open(join('result/dsc', '{0:}.txt').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
+with open(join('result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
     for key in config_file['data']['fg_class']:
         # Check if sam_dice_scores[key] is a list or numpy array
         if isinstance(sam_dice_scores[key], (list, np.ndarray)) and len(sam_dice_scores[key]) > 0:
