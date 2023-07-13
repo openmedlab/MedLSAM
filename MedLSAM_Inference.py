@@ -98,6 +98,7 @@ nii_pathes = read_file_list(config_file['data']['query_image_ls'])
 gt_pathes = read_file_list(config_file['data']['query_label_ls'])
 os.makedirs(config_file['data']['seg_png_save_path'], exist_ok=True)
 os.makedirs(config_file['data']['seg_save_path'], exist_ok=True)
+os.makedirs('result/dsc', exist_ok=True)
 
 sam_dice_scores = {key:[] for key in config_file['data']['fg_class']}
 

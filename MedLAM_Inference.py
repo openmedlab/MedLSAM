@@ -28,6 +28,7 @@ ana_det = AnatomyDetection(args.config_file)
 nii_pathes = read_file_list(config_file['data']['query_image_ls'])
 gt_pathes = read_file_list(config_file['data']['query_label_ls'])
 lam_iou_dic = {}
+os.makedirs('result/iou', exist_ok=True)
 
 for id in trange(len(nii_pathes)):
     nii_path = nii_pathes[id]
