@@ -12,3 +12,6 @@ __pycache__
 
 # Ignore all the files in result
 result/*
+
+# Ignore all the files in config/my_test_config
+config/my_test_config/*
