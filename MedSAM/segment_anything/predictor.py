@@ -6,7 +6,11 @@
 
 import numpy as np
 import torch
-
+import sys
+import os
+sys.path.append(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))  
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from segment_anything.modeling import Sam
 
 from typing import Optional, Tuple
