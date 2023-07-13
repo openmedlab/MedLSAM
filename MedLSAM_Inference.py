@@ -176,7 +176,7 @@ for id in trange(len(nii_pathes)):
             axes[1].axis('off')
             # save figure
             fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_cl{2}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), \
-                            nii_path.split('/')[-1].split('.')[0], str(key))))
+                            nii_path.split('/')[-1].split('.')[0], str(id), str(key))))
             # close figure
             plt.close(fig)
         except Exception:
