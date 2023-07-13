@@ -5,8 +5,8 @@ query_image_ls        =  config/data/WORD/query_image.txt
 query_label_ls        =  config/data/WORD/query_label.txt
 gt_slice_threshold    = 100
 fg_class              = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
-seg_save_path         = result/npz/WORD
-seg_png_save_path     = result/png/WORD
+seg_save_path         = result/npz/WORD/medlam_sam
+seg_png_save_path     = result/png/WORD/medlam_sam
 
 [vit]
 net_type                = vit_b

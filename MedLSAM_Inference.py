@@ -105,7 +105,7 @@ sam_dice_scores = {key:[] for key in config_file['data']['fg_class']}
 for id in trange(len(nii_pathes)):
     nii_path = nii_pathes[id]
     gt_path = gt_pathes[id]
-    save_path = join(config_file['data']['seg_save_path'], nii_path.split('/')[-1].split('.')[0]+ id + '.npz')
+    save_path = join(config_file['data']['seg_save_path'], nii_path.split('/')[-1].split('.')[0] + '.npz')
     
     extreme_cor_dic, corner_cor_dic, ori_shape = ana_det.get_extreme_corner(nii_path)
     # the order of SimpleITK is zyx, nibabel is xyz. ana_det use nibabel, so we need to reverse the order
@@ -175,7 +175,8 @@ for id in trange(len(nii_pathes)):
             axes[1].set_title('MedSAM: DSC={:.3f}'.format(sam_slice_dice_scores[img_id]))
             axes[1].axis('off')
             # save figure
-            fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_{2}_pad{3}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), id, key, padding)))
+            fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_cl{2}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), \
+                            nii_path.split('/')[-1].split('.')[0], str(key))))
             # close figure
             plt.close(fig)
         except Exception:
