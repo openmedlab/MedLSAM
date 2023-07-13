@@ -84,7 +84,7 @@ def finetune_model_predict(img_np, box_np, sam_trans, sam_model_tune, device='cu
 
 #% run inference
 # set up the parser
-parser = argparse.ArgumentParser(description='run inference on testing set based on MedSAM')
+parser = argparse.ArgumentParser(description='run inference on testing set based on MedLSAM')
 parser.add_argument('-c', '--config_file', type=str, default='config/test_config/test_structseg.txt', help='path to the config file')
 args = parser.parse_args()
 config_file = parse_config(args.config_file)
@@ -175,7 +175,7 @@ for id in trange(len(nii_pathes)):
             axes[1].set_title('DSC={:.3f}'.format(sam_slice_dice_scores[img_id]))
             axes[1].axis('off')
             # save figure
-            fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_cl{2}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), \
+            fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_{2}_cl{3}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), \
                             nii_path.split('/')[-1].split('.')[0], str(id), str(key))))
             # close figure
             plt.close(fig)
