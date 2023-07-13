@@ -13,4 +13,4 @@ net_type                = vit_b
 
 [weight]
 medlam_load_path   = checkpoint/medlam.pth
-vit_load_path  = checkpoint/medsam_20230423_vit_b_0.0.1.pth
+vit_load_path  = checkpoint/medsam_vit_b.pth

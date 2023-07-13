@@ -91,7 +91,7 @@ This repository provides the official implementation of [MedLSAM: Localize and S
 
 ### Download Model
 
-Download [MedLAM checkpoint](https://drive.google.com/file/d/1cwoHS5yNPI22-jgMnoUo_yqj0U9Rab3E/view?usp=sharing), [SAM checkpoint](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth), [MedSAM checkpoint](https://drive.google.com/drive/folders/1bWv_Zs5oYLpGMAvbotnlNXJPq7ltRUvF?usp=share_link) and place them at `checkpoint/medlam.pth`, `checkpoint/sam_vit_b_01ec64.pth` and `checkpoint/medsam_20230423_vit_b_0.0.1.pth`
+Download [MedLAM checkpoint](https://drive.google.com/file/d/1cwoHS5yNPI22-jgMnoUo_yqj0U9Rab3E/view?usp=sharing), [SAM checkpoint](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth), [MedSAM checkpoint](https://drive.google.com/drive/folders/1ETWmi4AiniJeWOt6HAsYgTjYv_fkgzoN) and place them at `checkpoint/medlam.pth`, `checkpoint/sam_vit_b_01ec64.pth` and `checkpoint/medsam_vit_b.pth`
 
 ## Inference
 ### GPU requirement
