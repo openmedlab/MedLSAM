@@ -47,8 +47,6 @@
 [![Contributors](https://img.shields.io/github/contributors/opendilab/DI-engine)](https://github.com/opendilab/DI-engine/graphs/contributors)
 [![GitHub license](https://img.shields.io/github/license/opendilab/DI-engine)](https://github.com/opendilab/DI-engine/blob/master/LICENSE) -->
 
-Updated on 2023.06.28
-
 ## Key Features
 
 This repository provides the official implementation of [MedLSAM: Localize and Segment Anything Model for 3D Medical Images](https://arxiv.org/abs/2306.14752)
