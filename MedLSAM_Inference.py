@@ -172,7 +172,7 @@ for id in trange(len(nii_pathes)):
             axes[1].imshow(imgs[img_id])
             show_box(sam_bboxes[img_id], axes[1])
             show_mask(sam_segs[img_id], axes[1])
-            axes[1].set_title('MedSAM: DSC={:.3f}'.format(sam_slice_dice_scores[img_id]))
+            axes[1].set_title('DSC={:.3f}'.format(sam_slice_dice_scores[img_id]))
             axes[1].axis('off')
             # save figure
             fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_cl{2}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), \
@@ -185,7 +185,7 @@ for id in trange(len(nii_pathes)):
 
 #% save dice scores
 for key in config_file['data']['fg_class']:
-    print('MedSAM DSC for class {}: {:.3f}'.format(key, np.mean(sam_dice_scores[key])))
+    print('DSC for class {}: {:.3f}'.format(key, np.mean(sam_dice_scores[key])))
 
 #% save dice scores as txt
 with open(join('result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
@@ -194,6 +194,6 @@ with open(join('result/dsc', '{0:}').format(os.path.basename(args.config_file).r
         if isinstance(sam_dice_scores[key], (list, np.ndarray)) and len(sam_dice_scores[key]) > 0:
             mean_score = np.mean(sam_dice_scores[key])
             std_score = np.std(sam_dice_scores[key])
-            f.write('MedSAM DSC for class {}: {:.3f} +- {:.3f}\n'.format(key, mean_score, std_score))
+            f.write('DSC for class {}: {:.3f} +- {:.3f}\n'.format(key, mean_score, std_score))
         else:
             print("sam_dice_scores[{}] is not a list or numpy array or it is empty".format(key))
