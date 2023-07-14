@@ -21,12 +21,11 @@ import argparse
 import cv2
 from skimage.measure import label, regionprops
 
-def preprocess_ct(gt_path, nii_path, label_id, image_size, sam_model=None, device=0, gt_slice_threshold=0, z_min=0, z_max=0, padding=0):
+def preprocess_ct(gt_path, nii_path, label_id, image_size, sam_model=None, device=0, gt_slice_threshold=0, z_min=None, z_max=None, padding=0):
     # do not select the z index
     gt_sitk = sitk.ReadImage(gt_path)
     gt_data = sitk.GetArrayFromImage(gt_sitk)
     gt_data = np.uint8(gt_data==label_id)
-
     if np.sum(gt_data)>10:
         imgs = {}
         gts =  {}
@@ -41,9 +40,16 @@ def preprocess_ct(gt_path, nii_path, label_id, image_size, sam_model=None, devic
         image_data_pre = (image_data_pre - np.min(image_data_pre))/(np.max(image_data_pre)-np.min(image_data_pre))*255.0
         image_data_pre[image_data==0] = 0
         image_data_pre = np.int32(image_data_pre)
-        z_start_index = np.int32(max(0, z_min-padding))
-        z_end_index = np.int32(min(gt_data.shape[0], z_max+padding))
-        for i in range(z_start_index, z_end_index):
+        z_index, _, _ = np.where(gt_data>0)
+        if z_min is None:
+            z_min = np.min(z_index)
+        else:
+            z_min = np.int32(max(0, z_min-padding))
+        if z_max is None:
+            z_max = np.max(z_index)
+        else:
+            z_max = np.int32(min(gt_data.shape[0], z_max+padding))
+        for i in range(z_min, z_max):
             gt_slice_i = gt_data[i,:,:]
             if np.sum(gt_slice_i)>gt_slice_threshold:
                 img_slice_i = image_data_pre[i,:,:]

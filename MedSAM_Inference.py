@@ -17,6 +17,7 @@ from tqdm import trange
 import argparse
 import traceback
 from MedSAM.auto_pre_CT import preprocess_ct
+import random
 
 # visualization functions
 # source: https://github.com/facebookresearch/segment-anything/blob/main/notebooks/predictor_example.ipynb
@@ -94,6 +95,7 @@ sam_trans = ResizeLongestSide(sam_model_tune.image_encoder.img_size)
 nii_pathes = read_file_list(config_file['data']['query_image_ls'])
 gt_pathes = read_file_list(config_file['data']['query_label_ls'])
 os.makedirs(config_file['data']['seg_png_save_path'], exist_ok=True)
+os.makedirs(config_file['data']['seg_save_path'], exist_ok=True)
 os.makedirs('result/dsc', exist_ok=True)
 
 sam_dice_scores = {key:[] for key in config_file['data']['fg_class']}
@@ -107,13 +109,13 @@ for id in trange(len(nii_pathes)):
         try:
             imgs, gts = preprocess_ct(gt_path, nii_path, label_id=key, image_size=1024, gt_slice_threshold=config_file['data']['gt_slice_threshold'])
 
-            sam_segs = []
-            sam_bboxes = []
-            sam_slice_dice_scores = []
+            sam_segs = {}
+            sam_bboxes = {}
+            sam_slice_dice_scores = {}
             volume_intersect = 0
             volume_sum = 0.001
-
-            for img_id, ori_img in enumerate(imgs):
+            for img_id  in imgs.keys():
+                ori_img = imgs[img_id]
                 # get bounding box from mask
                 gt2D = gts[img_id]
                 y_indices, x_indices = np.where(gt2D > 0)
@@ -127,14 +129,14 @@ for id in trange(len(nii_pathes)):
                 y_max = min(H, y_max + np.random.randint(0, 20))
                 bbox = np.array([x_min, y_min, x_max, y_max])
                 seg_mask = finetune_model_predict(ori_img, bbox, sam_trans, sam_model_tune)
-                sam_segs.append(seg_mask)
-                sam_bboxes.append(bbox)
+                sam_segs[img_id] = seg_mask
+                sam_bboxes[img_id] = bbox
                 # these 2D dice scores are for debugging purpose. 
                 # 3D dice scores should be computed for 3D images
                 slice_dice, slice_intersect, slice_volume = compute_dice(seg_mask>0, gt2D>0)
                 volume_intersect += slice_intersect
                 volume_sum += slice_volume
-                sam_slice_dice_scores.append(slice_dice)
+                sam_slice_dice_scores[img_id]=slice_dice
             volume_dice = 2*volume_intersect/volume_sum
             sam_dice_scores[key].append(volume_dice)
             
@@ -142,7 +144,7 @@ for id in trange(len(nii_pathes)):
             np.savez_compressed(save_path, medsam_segs=sam_segs, gts=gts, sam_bboxes=sam_bboxes)
 
             # visualize segmentation results
-            img_id = np.random.randint(0, len(imgs))
+            img_id = random.choice(list(imgs.keys()))
             # show ground truth and segmentation results in two subplots
             fig, axes = plt.subplots(1, 2, figsize=(10, 5))
             axes[0].imshow(imgs[img_id])
