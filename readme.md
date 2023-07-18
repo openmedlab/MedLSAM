@@ -141,7 +141,7 @@ Each of the parameters is explained as follows:
 - `vit_load_path`: The path to load the pretrained vision transformer model weights, **only required for MedLSAM**. You can change it to `checkpoint/sam_vit_b_01ec64.pth` to use the SAM model as segmentation basis.
 
 ### Inference
-- MedLAM (Localize any anatomy target)
+- MedLAM (**Localize any anatomy target**)
 ```bash
 CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file path/to/your/test_medlam_config.txt
 ```
@@ -151,7 +151,7 @@ CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file config/test_conf
 CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file config/test_config/test_word_medlam.txt
 ```
 
-- MedLSAM (Localize and segment any anatomy target)
+- MedLSAM (**Localize and segment any anatomy target**)
 ```bash
 CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file path/to/your/test_medlsam_config.txt
 ```
@@ -181,10 +181,10 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_con
 ## To do list
 - [ ] Support scribble prompts
 - [ ] Support MobliSAM
-## 🙋‍♀️ Feedback and Contact
+## Feedback and Contact
 
-- lyc745307452@gmail.com
-
+- email: lyc745307452@gmail.com
+- wechat: lyc4560147
 
 ## 🛡️ License
 
