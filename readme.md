@@ -183,8 +183,8 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_con
 - [ ] Support MobliSAM
 ## Feedback and Contact
 
-- email: lyc745307452@gmail.com
-- wechat: lyc4560147
+- Email: lyc745307452@gmail.com
+- Wechat: lyc4560147
 
 ## 🛡️ License
 
