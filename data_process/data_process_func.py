@@ -117,7 +117,7 @@ def load_and_pre_ct(image_path, mode='image'):
         data = nibabel.load(image_path)
         ori_shape = data.shape
         data, ori_ornt = reorient(data, targ_axcode="LAS")
-        image = data.get_data()
+        image = data.get_fdata()
         spacing = list(data.header.get_zooms())
         image = image.transpose(2, 1, 0)
         spacing.reverse()
