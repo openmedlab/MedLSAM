@@ -1,24 +1,32 @@
 # %% load environment
-import sys
 import os
+import sys
+
 sys.path.append(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))  
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import numpy as np
-import matplotlib.pyplot as plt
 import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+current_directory = os.path.dirname(os.path.abspath(__file__))
+
 join = os.path.join
-from util.parse_config import parse_config
-from data_process.data_process_func import *
+import argparse
+import random
+import traceback
+
 import torch
+from tqdm import trange
+
+from data_process.data_process_func import *
+from MedLAM.Anatomy_detection import AnatomyDetection
+from MedSAM.auto_pre_CT import *
 from MedSAM.segment_anything.build_sam import sam_model_registry
 from MedSAM.segment_anything.utils.transforms import ResizeLongestSide
-from tqdm import trange
-import argparse
-import traceback
-from MedSAM.auto_pre_CT import *
-from MedLAM.Anatomy_detection import AnatomyDetection
-import random
+from util.parse_config import parse_config
+
 
 # visualization functions
 # source: https://github.com/facebookresearch/segment-anything/blob/main/notebooks/predictor_example.ipynb
@@ -85,7 +93,7 @@ def finetune_model_predict(img_np, box_np, sam_trans, sam_model_tune, device='cu
 #% run inference
 # set up the parser
 parser = argparse.ArgumentParser(description='run inference on testing set based on MedLSAM')
-parser.add_argument('-c', '--config_file', type=str, default='config/test_config/test_structseg.txt', help='path to the config file')
+parser.add_argument('-c', '--config_file', type=str, help='path to the config file')
 args = parser.parse_args()
 config_file = parse_config(args.config_file)
 
@@ -98,7 +106,7 @@ nii_pathes = read_file_list(config_file['data']['query_image_ls'])
 gt_pathes = read_file_list(config_file['data']['query_label_ls'])
 os.makedirs(config_file['data']['seg_png_save_path'], exist_ok=True)
 os.makedirs(config_file['data']['seg_save_path'], exist_ok=True)
-os.makedirs('result/dsc', exist_ok=True)
+os.makedirs(f'{current_directory}/result/dsc', exist_ok=True)
 
 sam_dice_scores = {key:[] for key in config_file['data']['fg_class']}
 
@@ -125,7 +133,8 @@ for id in trange(len(nii_pathes)):
             y_max = corner_cor_dic[key][1][-2]+padding
             z_min = corner_cor_dic[key][0][0]
             z_max = corner_cor_dic[key][1][0]
-            imgs, gts = preprocess_ct(gt_path, nii_path, label_id=key, image_size=1024, gt_slice_threshold=config_file['data']['gt_slice_threshold'] , z_min=z_min, z_max=z_max, padding=10)
+            imgs, gts = preprocess_ct(gt_path, nii_path, label_id=key, image_size=1024, \
+                    gt_slice_threshold=config_file['data']['gt_slice_threshold'], z_min=z_min, z_max=z_max, padding=10)
             # print(corner_cor_dic, extreme_cor_dic[key])
             sam_segs = {}
             sam_bboxes = {}
@@ -183,12 +192,11 @@ for id in trange(len(nii_pathes)):
             traceback.print_exc()
             print('error in {0}, class {1}'.format(nii_path, key))
 
-#% save dice scores
 for key in config_file['data']['fg_class']:
     print('DSC for class {}: {:.3f}'.format(key, np.mean(sam_dice_scores[key])))
 
 #% save dice scores as txt
-with open(join('result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
+with open(join(f'{current_directory}/result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
     for key in config_file['data']['fg_class']:
         # Check if sam_dice_scores[key] is a list or numpy array
         if isinstance(sam_dice_scores[key], (list, np.ndarray)) and len(sam_dice_scores[key]) > 0:

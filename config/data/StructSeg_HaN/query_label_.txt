@@ -1,0 +1,15 @@
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/14/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/15/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/16/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/17/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/18/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/19/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/2/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/20/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/21/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/22/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/23/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/24/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/25/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/26/label.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/27/label.nii.gz

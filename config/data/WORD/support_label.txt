@@ -1,5 +1,5 @@
-data/WORD/labelsTr/word_0010.nii.gz
-data/WORD/labelsTr/word_0036.nii.gz
-data/WORD/labelsTr/word_0053.nii.gz
-data/WORD/labelsTr/word_0064.nii.gz
-data/WORD/labelsTr/word_0113.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/labelsTr/word_0010.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/labelsTr/word_0036.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/labelsTr/word_0053.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/labelsTr/word_0064.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/labelsTr/word_0113.nii.gz

@@ -2,10 +2,13 @@
 import os
 import sys
 
+# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 sys.path.append(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))  
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import os
+
+current_directory = os.path.dirname(os.path.abspath(__file__))
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,13 +21,13 @@ import time
 import traceback
 
 import cv2
-import SimpleITK as sitk
 import torch
 from tqdm import trange
 
 from data_process.data_process_func import *
+from MedLAM.Anatomy_detection import AnatomyDetection
 from MedLAM.detection_functions import *
-from MedSAM.auto_pre_CT import preprocess_ct
+from MedSAM.auto_pre_CT import *
 from MedSAM.segment_anything.build_sam import sam_model_registry
 from MedSAM.segment_anything.utils.transforms import ResizeLongestSide
 from util.evaluation_index import hd95
@@ -95,12 +98,13 @@ def finetune_model_predict(img_np, box_np, sam_trans, sam_model_tune, device='cu
 
 #% run inference
 # set up the parser
-parser = argparse.ArgumentParser(description='run inference on testing set based on MedSAM')
-parser.add_argument('-c', '--config_file', type=str, default='config/test_config/test.txt', help='path to the config file')
+parser = argparse.ArgumentParser(description='run inference on testing set based on MedLSAM')
+parser.add_argument('-c', '--config_file', type=str, help='path to the config file')
 args = parser.parse_args()
 config_file = parse_config(args.config_file)
 
-#% load MedSAM model
+#% load MedLSAM model
+ana_det = AnatomyDetection(args.config_file)
 sam_model_tune = sam_model_registry[config_file['vit']['net_type']](checkpoint=config_file['weight']['vit_load_path']).to('cuda:0')
 sam_trans = ResizeLongestSide(sam_model_tune.image_encoder.img_size)
 
@@ -108,66 +112,93 @@ nii_pathes = read_file_list(config_file['data']['query_image_ls'])
 gt_pathes = read_file_list(config_file['data']['query_label_ls'])
 os.makedirs(config_file['data']['seg_png_save_path'], exist_ok=True)
 os.makedirs(config_file['data']['seg_save_path'], exist_ok=True)
-os.makedirs('result/dsc', exist_ok=True)
+os.makedirs(f'{current_directory}/result/json', exist_ok=True)
+os.makedirs(f'{current_directory}/result/dsc', exist_ok=True)
+os.makedirs(f'{current_directory}/result/hd95', exist_ok=True)
 
 sam_dice_scores = {key:[] for key in config_file['data']['fg_class']}
 sam_hd95_scores = {key:[] for key in config_file['data']['fg_class']}
 
+print('\n #### start inference ####')
 for id in trange(len(nii_pathes)):
     nii_path = nii_pathes[id]
     gt_path = gt_pathes[id]
-    save_path = join(config_file['data']['seg_save_path'], nii_path.split('/')[-1].split('.')[0] + '.npz')
     time0 = time.time()
+    extreme_cor_dic, corner_cor_dic, ori_shape = ana_det.get_extreme_corner(nii_path)
+    time1 = time.time()
+    print('get extreme corner time: ', time1 - time0)
+    z_min_ls = [corner_cor_dic[key][0][0][0] for key in corner_cor_dic.keys()]
+    z_max_ls = [corner_cor_dic[key][-1][1][0] for key in corner_cor_dic.keys()]
+    z_min = min(z_min_ls) # minimum z of all organs
+    z_max = max(z_max_ls) # maximum z of all organs
+    time2 = time.time()
+    imgs, gts = preprocess_ct(gt_path, nii_path, label_id_ls=list(corner_cor_dic.keys()), image_size=1024, \
+                    gt_slice_threshold=config_file['data']['gt_slice_threshold'], z_min=z_min, z_max=z_max, padding=0)
+    time3 = time.time()
     gt_sitk = sitk.ReadImage(gt_path)
     gt_data = sitk.GetArrayFromImage(gt_sitk).astype(np.int16)
+    print('preprocess time: ', time3 - time2)
+    # the order of SimpleITK is zyx, nibabel is xyz. ana_det use nibabel, so we need to reverse the order
+    ori_shape = ori_shape[::-1]
     # then resize the corner coordinates to the corresponding coordinates in the resized image
-    imgs, gts = preprocess_ct(gt_path, nii_path, label_id_ls=config_file['data']['fg_class'], image_size=1024, \
-            gt_slice_threshold=config_file['data']['gt_slice_threshold'])
-    time1 = time.time()
-    print('preprocess time: ', time1-time0)
-    for key in config_file['data']['fg_class']:
+    for key in corner_cor_dic.keys():
         try:
             pred_key_array = np.zeros_like(gt_data, dtype=np.int16)
             ngt_data = np.zeros_like(gt_data)
             ngt_data[gt_data==key] = 1
-            z_index, _, _ = np.where(ngt_data>0)
-            z_min = np.min(z_index)
-            z_max = np.max(z_index)
-
             sam_segs = {}
             sam_bboxes = {}
             sam_slice_dice_scores = {}
-            volume_intersect = 0
-            volume_sum = 0.001
-            for img_id  in imgs.keys():
-                if img_id>=z_min and img_id<=z_max:
-                    ori_img = imgs[img_id]
-                    # get bounding box from mask
-                    gt2D = gts[img_id]
-                    ngt2D = np.zeros_like(gt2D)
-                    ngt2D[gt2D==key] = 1
-                    y_indices, x_indices = np.where(ngt2D > 0)
-                    x_min, x_max = np.min(x_indices), np.max(x_indices)
-                    y_min, y_max = np.min(y_indices), np.max(y_indices)
-                    # add perturbation to bounding box coordinates
-                    H, W = ngt2D.shape
-                    x_min = max(0, x_min - np.random.randint(0, 20))
-                    x_max = min(W, x_max + np.random.randint(0, 20))
-                    y_min = max(0, y_min - np.random.randint(0, 20))
-                    y_max = min(H, y_max + np.random.randint(0, 20))
-                    bbox = np.array([x_min, y_min, x_max, y_max])
-                    seg_mask, seg_prob = finetune_model_predict(ori_img, bbox, sam_trans, sam_model_tune)
-                    sam_segs[img_id] = seg_mask
-                    sam_bboxes[img_id] = bbox
-                    pred_key_array[img_id] = (cv2.resize(seg_prob, pred_key_array[img_id].shape, interpolation=cv2.INTER_NEAREST)> 0.5).astype(np.uint8)
-                    # these 2D dice scores are for debugging purpose. 
-                    # 3D dice scores should be computed for 3D images
-                    slice_dice, slice_intersect, slice_volume = compute_dice(seg_mask>0, ngt2D>0)
-                    volume_intersect += slice_intersect
-                    volume_sum += slice_volume
-                    sam_slice_dice_scores[img_id]=slice_dice
-            volume_dice = 2*volume_intersect/volume_sum
-            sam_dice_scores[key].append(volume_dice)
+            ##### locate and segment each part of the organ #####
+            for bbox_id in range(len(corner_cor_dic[key])):
+                img_id_ls = []
+                # transfer the corner coordinates to the resized image
+                corner_cor_dic[key][bbox_id] = [[corner_cor_dic[key][bbox_id][0][0], np.around(corner_cor_dic[key][bbox_id][0][1]*1024/ori_shape[1]), 
+                                        np.around(corner_cor_dic[key][bbox_id][0][2]*1024/ori_shape[2])],
+                                        [corner_cor_dic[key][bbox_id][1][0], np.around(corner_cor_dic[key][bbox_id][1][1]*1024/ori_shape[1]), 
+                                        np.around(corner_cor_dic[key][bbox_id][1][2]*1024/ori_shape[2])]
+                                        ]
+                padding = 10
+                x_min = corner_cor_dic[key][bbox_id][0][-1]-padding
+                x_max = corner_cor_dic[key][bbox_id][1][-1]+padding
+                y_min = corner_cor_dic[key][bbox_id][0][-2]-padding
+                y_max = corner_cor_dic[key][bbox_id][1][-2]+padding
+                z_min = corner_cor_dic[key][bbox_id][0][0]
+                z_max = corner_cor_dic[key][bbox_id][1][0]
+                if len(imgs.keys())>0:
+                    for img_id in imgs.keys():
+                        if img_id>=z_min and img_id<=z_max:
+                            # get bounding box from mask
+                            gt2D = gts[img_id]
+                            ngt2D = np.zeros_like(gt2D)
+                            ngt2D[gt2D==key] = 1
+                            ori_img = imgs[img_id]
+                            bbox = np.array([x_min, y_min, x_max, y_max])
+                            seg_mask, seg_prob = finetune_model_predict(ori_img, bbox, sam_trans, sam_model_tune)
+                            sam_segs[img_id] = seg_mask
+                            sam_bboxes[img_id] = bbox
+                            img_id_ls.append(img_id)
+                            pred_key_array[img_id] = (cv2.resize(seg_prob, pred_key_array[img_id].shape, interpolation=cv2.INTER_NEAREST)> 0.5).astype(np.uint8)
+                            slice_dice, slice_intersect, slice_volume = compute_dice(seg_mask>0, ngt2D>0)
+                            sam_slice_dice_scores[img_id] = slice_dice
+                    if len(img_id_ls) > 0:
+                        # visualize segmentation results
+                        img_id = random.choice(img_id_ls)
+                        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+                        axes[0].imshow(imgs[img_id])
+                        show_box(sam_bboxes[img_id], axes[0])
+                        show_mask(1*(gts[img_id]==key), axes[0])
+                        axes[0].set_title('Ground Truth')
+                        axes[0].axis('off')
+
+                        axes[1].imshow(imgs[img_id])
+                        show_box(sam_bboxes[img_id], axes[1])
+                        show_mask(sam_segs[img_id], axes[1])
+                        axes[1].set_title('DSC={:.3f}'.format(sam_slice_dice_scores[img_id]))
+                        axes[1].axis('off')
+                        fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_{2}_cl{3}_{4}.png'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), \
+                                        nii_path.split('/')[-1].split('.')[0], str(id), str(key), str(bbox_id))))
+                        plt.close(fig)
             
             # compute dice score for the whole volume
             volume_dice = 2*np.sum(ngt_data*pred_key_array)/(np.sum(1*ngt_data+pred_key_array)+0.0001)
@@ -183,46 +214,26 @@ for id in trange(len(nii_pathes)):
             pred_sitk.SetDirection(gt_sitk.GetDirection())
             sitk.WriteImage(pred_sitk, join(config_file['data']['seg_save_path'], '{0}_{1}_{2}_cl{3}.nii.gz'.format(os.path.basename(args.config_file).replace('test_','').replace('.txt',''), \
                                         nii_path.split('/')[-1].split('.')[0], str(id), str(key))))
-
-            # visualize segmentation results
-            img_id = random.choice(list(sam_segs.keys()))
-            # show ground truth and segmentation results in two subplots
-            fig, axes = plt.subplots(1, 2, figsize=(10, 5))
-            axes[0].imshow(imgs[img_id])
-            show_box(sam_bboxes[img_id], axes[0])
-            show_mask(gts[img_id], axes[0])
-            axes[0].set_title('Ground Truth')
-            axes[0].axis('off')
-
-            axes[1].imshow(imgs[img_id])
-            show_box(sam_bboxes[img_id], axes[1])
-            show_mask(sam_segs[img_id], axes[1])
-            axes[1].set_title('DSC={:.3f}'.format(sam_slice_dice_scores[img_id]))
-            axes[1].axis('off')
-            # save figure
-            fig.savefig(join(config_file['data']['seg_png_save_path'], '{0}_{1}_cl{2}.png'.format(nii_path.split('/')[-1].split('.')[0], str(id), str(key))))
-            # close figure
-            plt.close(fig)
         except Exception:
             traceback.print_exc()
             print('error in {0}, class {1}'.format(nii_path, key))
-    time2 = time.time()
-    print('segment time: ', time2 - time1)
-    print('total time: ', time2 - time0)
-#% save dice scores
+
+    time4 = time.time()
+    print('segment time: ', time4 - time3)
+    print('total time: ', time4 - time1)
+
 for key in config_file['data']['fg_class']:
     print('DSC for class {}: {:.3f}'.format(key, np.mean(sam_dice_scores[key])), 'HD95 for class {}: {:.3f}'.format(key, np.mean(sam_hd95_scores[key])))
 
-# save the result as JSON
-os.makedirs('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/json', exist_ok=True)
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','dsc_')), 'w') as f:
+# save all the result as JSON
+with open(join(f'{current_directory}/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','dsc_')), 'w') as f:
     json.dump(sam_dice_scores, f, cls=NumpyEncoder)
 
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','hd95_')), 'w') as f:
+with open(join(f'{current_directory}/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','hd95_')), 'w') as f:
     json.dump(sam_hd95_scores, f, cls=NumpyEncoder)
 
-#% save dice scores as txt
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
+#% save mean+-std dice scores as txt
+with open(join(f'{current_directory}/result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
     for key in config_file['data']['fg_class']:
         # Check if sam_dice_scores[key] is a list or numpy array
         if isinstance(sam_dice_scores[key], (list, np.ndarray)) and len(sam_dice_scores[key]) > 0:
@@ -232,8 +243,8 @@ with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/dsc', '
         else:
             print("sam_dice_scores[{}] is not a list or numpy array or it is empty".format(key))
 
-#% save hd95 scores as txt
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/hd95', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
+#% save mean+-std hd95 scores as txt
+with open(join(f'{current_directory}/result/hd95', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
     for key in config_file['data']['fg_class']:
         # Check if sam_hd95_scores[key] is a list or numpy array
         if isinstance(sam_hd95_scores[key], (list, np.ndarray)) and len(sam_hd95_scores[key]) > 0:

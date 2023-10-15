@@ -1,32 +1,39 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys
 import os
-from os.path import abspath, join, dirname
+import sys
+from os.path import abspath, dirname, join
+
 sys.path.append(os.path.abspath(__file__))  
 sys.path.append(os.path.dirname(os.path.abspath(__file__))) 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, join(abspath(dirname(__file__)), 'src'))
-import  numpy as np
-from data_process.data_process_func import *
+import copy
+import json
+import random
+
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from scipy.ndimage import morphology
-import random
-import copy
+
+from data_process.data_process_func import *
+
 cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 
 class Relative_distance(object):
     def __init__(self,network,out_mode='fc_position', feature_refine_mode=False, distance_mode='linear', \
-                center_patch_size=[8,8,8], distance_ratio=100):
+                center_patch_size=[8,8,8], distance_ratio=100, feature_scale_ls=['feature0', 'feature1', 'feature2']):
         self.network = network
         self.center_patch_size = np.array(center_patch_size)
         self.distance_ratio = distance_ratio
         self.distance_mode = distance_mode
         self.out_mode = out_mode
         self.feature_refine_mode = feature_refine_mode
+        self.feature_scale_ls = feature_scale_ls
         self.support_label_position_dic = {}
+        self.full_shape_dic = {}
         if self.feature_refine_mode:
             self.support_center_feature = {}
             self.support_center_conv = {}
@@ -38,10 +45,10 @@ class Relative_distance(object):
         '''
         if idx==0:
             self.support_center_feature[fg_class] = {}
-        center_label_patch = crop_patch_around_center(support_label_patch, np.int8(self.center_patch_size//2)) #6,1,r,r,r 
-        self.support_patch = support_patch
-        self.full_shape = list(support_patch.shape[:1]+ support_patch.shape[2:])# 6, D, W, H
+        center_label_patch = torch.tensor(crop_patch_around_center(support_label_patch, np.int8(self.center_patch_size//2))).float().cuda() #6,1,r,r,r 
+        self.full_shape_dic[fg_class] = list(support_patch.shape[:1]+ support_patch.shape[2:])# B, D, W, H
         self.support_all = self.network(x=torch.from_numpy(support_patch).float().half(), out_fc=True, out_feature=True, out_classification=False)
+
         if idx ==0:
             self.support_label_position_dic[fg_class] = self.support_all[self.out_mode].cpu().numpy()
         else:
@@ -57,14 +64,14 @@ class Relative_distance(object):
                         self.support_center_feature[fg_class][key] = norm_feature
                     else:
                         self.support_center_feature[fg_class][key] += norm_feature
-        elif self.feature_refine_mode == 'corner':
+        elif self.feature_refine_mode == 'label_patch':
             for key in self.support_all:
-                if 'feature' in key:
+                if 'feature' in key and key in self.feature_scale_ls:
                     support_feature = self.support_all[key] #[6,c,d,w,h]
                     zoom_factor = support_feature.shape[-1]/support_label_patch.shape[-1]
-                    cur_support_center_label_patch = F.interpolate(center_label_patch.float(), scale_factor=zoom_factor, mode='trilinear')
+                    cur_support_center_label_patch = F.interpolate(center_label_patch, scale_factor=zoom_factor, mode='trilinear')
                     cur_support_center_feature = crop_patch_around_center(support_feature, np.int8(self.center_patch_size//2*zoom_factor))
-                    norm_feature = F.normalize(cur_support_center_feature, dim=1)*(cur_support_center_label_patch) #[6,c,r,r,r]
+                    norm_feature = F.normalize(cur_support_center_feature, dim=1)#*(cur_support_center_label_patch) #[6,c,r,r,r]
                     if idx==0:
                         self.support_center_feature[fg_class][key] = norm_feature
                     else:
@@ -81,14 +88,42 @@ class Relative_distance(object):
             self.support_center_conv[fg_class][key].weight = torch.nn.Parameter(self.support_center_feature[fg_class][key]) #[6,c,r,r,r]
             self.support_center_conv[fg_class][key] = self.support_center_conv[fg_class][key].half()
             
-
-            
-    def cal_RD(self, query_patch, fg_class, mean=False, out_fc=True, out_feature=False):
+    def cal_query(self, query_batch, mean=False, out_fc=True, out_feature=False):
         '''
-        query_patch:[b*1*d*w*h]
+        query_batch:[b*1*d*w*h]
+        '''
+        query_all = self.network(x=torch.from_numpy(query_batch).float().half(), out_fc=out_fc, out_feature=out_feature, out_classification=False)
+        query_position = query_all[self.out_mode].cpu().numpy()# [b, 3]
+        if self.out_mode == 'position':
+            if self.center_patch_size =='all':
+                query_position = np.mean(query_position, axis=(2,3,4)) #[6,3]
+            else:
+                query_position = np.mean(crop_patch_around_center(query_position, r=self.center_patch_size), axis=(2,3,4))
+        if mean:
+            query_position = np.mean(query_position, axis=0)
+
+        return query_position
+    
+    def cal_RD(self, query_position, fg_class):
+        '''
+        query_position
         '''
         result = {}
-        query_all = self.network(x=torch.from_numpy(query_patch).float().half(), out_fc=out_fc, out_feature=out_feature, out_classification=False)
+        if self.distance_mode=='linear':
+            relative_position = self.distance_ratio*(self.support_label_position_dic[fg_class]-query_position)
+        elif self.distance_mode=='tanh':
+            relative_position = self.distance_ratio*np.tanh(self.support_label_position_dic[fg_class]-query_position)
+        else:
+            raise ValueError('Please select a correct distance mode!!！')
+        result['relative_position']=relative_position
+        return result
+
+    def cal_RD_old(self, query_batch, fg_class, mean=False, out_fc=True, out_feature=False):
+        '''
+        query_batch:[b*1*d*w*h]
+        '''
+        result = {}
+        query_all = self.network(x=torch.from_numpy(query_batch).float().half(), out_fc=out_fc, out_feature=out_feature, out_classification=False)
         quer_position = query_all[self.out_mode].cpu().numpy()# [b, 3]
         if self.out_mode == 'position':
             if self.center_patch_size =='all':
@@ -106,35 +141,35 @@ class Relative_distance(object):
         result['relative_position']=relative_position
         return result
     
+    
     def cal_RD_with_feature(self, query_patch, fg_class, spacing, out_fc=False, out_feature=True):
         '''
         query_patch:[b*1*d*w*h]
         '''
         result = {}
         query_all = self.network(x=torch.from_numpy(query_patch).float().half(),out_fc=out_fc,out_feature=out_feature, out_classification=False)
-        cos_sim_map = np.ones(self.full_shape).astype(np.float16) # 6, d, w, h
+        cos_sim_map = np.ones(list(self.full_shape_dic[fg_class])[0:1]+list(query_patch.shape)[-3:]).astype(np.float16) # b, d, w, h
         
         for key in query_all.keys():
-            if 'feature' in key:
-                norm_querry_feature = F.normalize(query_all[key], dim=1) # 6, c, d, w, h
+            if 'feature' in key and key in self.feature_scale_ls:
+                norm_querry_feature = F.normalize(query_all[key], dim=1) # b, c, d, w, h
                 if self.feature_refine_mode == 'point':
-                    cur_sim_map = torch.sum(norm_querry_feature*self.support_center_feature[key], dim=1, keepdim=True) # 6, 1, d, w, h
-                elif self.feature_refine_mode == 'corner':
+                    cur_sim_map = torch.sum(norm_querry_feature*self.support_center_feature[key], dim=1, keepdim=True) # b, 1, d, w, h
+                elif self.feature_refine_mode == 'label_patch':
                     norm_querry_feature = norm_querry_feature.view(1, norm_querry_feature.shape[0]*norm_querry_feature.shape[1], \
-                            norm_querry_feature.shape[2], norm_querry_feature.shape[3], norm_querry_feature.shape[2])
-                    cur_sim_map = self.support_center_conv[fg_class][key](norm_querry_feature) # 6, 1, d, w, h
+                            norm_querry_feature.shape[2], norm_querry_feature.shape[3], norm_querry_feature.shape[4]) # 1, b*c, d, w, h
+                    cur_sim_map = self.support_center_conv[fg_class][key](norm_querry_feature) # b, 1, d, w, h
                     cur_sim_map /= self.support_center_conv[fg_class][key].weight.shape[-1]**3
-                zoom_factor = cos_sim_map.shape[-1]/cur_sim_map.shape[-1]
-                cur_sim_map = F.interpolate(cur_sim_map, scale_factor=zoom_factor, mode='trilinear').cpu().numpy().squeeze()
+                cur_sim_map = F.interpolate(cur_sim_map, size=cos_sim_map.shape[-3:], mode='trilinear').cpu().numpy().squeeze()
                 cos_sim_map = cos_sim_map+cur_sim_map
                 
         max_cor = []
         for i in range(cos_sim_map.shape[0]):
             cur_cor=np.array(np.where(cos_sim_map[i]==np.max(cos_sim_map[i])))
-            max_cor.append(cur_cor[:, 0]) # 6, 3
+            max_cor.append(cur_cor[:, 0]) # b, 3
         max_sim = np.max(cos_sim_map.reshape(cos_sim_map.shape[0], -1), axis=1)
         max_cor = np.array(max_cor)
-        relative_cor = max_cor-np.array(self.full_shape[1::])[np.newaxis]//2+1 # 6,3
+        relative_cor = max_cor-np.array(list(query_patch.shape)[-3:])[np.newaxis]//2+1 # b,3
         result['cos_sim_map']=cos_sim_map
         result['relative_position']=relative_cor*spacing
         result['relative_cor'] = relative_cor
@@ -230,13 +265,13 @@ def crop_patch_around_center(img, r):
         patch = img[:, :, shape[0]//2-r[0]:shape[0]//2+r[0], shape[1]//2-r[1]:shape[1]//2+r[1], shape[2]//2-r[2]:shape[2]//2+r[2]]
     return patch
 
-def extract_fg_cor(label, extreme_point_num=2, erosion_num=False, pad=[0, 0, 0]):
+def extract_fg_cor(label, bbox_mode, erosion_num=False, pad=[0, 0, 0], split_num = 0):
     if erosion_num:
         label= morphology.binary_erosion(label, structure=np.ones([1,1,1]), iterations=erosion_num)
     extre_cor = get_bound_coordinate(label, pad=pad) #[minpoint, maxpoint]
-    if extreme_point_num==2:
+    if bbox_mode=='corner':
         return np.asarray(extre_cor)
-    elif extreme_point_num==6:
+    elif bbox_mode=='extreme':
         real_extre_point = np.zeros([6,3])
         for i in range(len(extre_cor)):
             for ii in range(len(extre_cor[i])):
@@ -249,6 +284,29 @@ def extract_fg_cor(label, extreme_point_num=2, erosion_num=False, pad=[0, 0, 0])
                 cor[ii-1]=center_y
                 real_extre_point[i*3+ii] = cor
         return np.int16(real_extre_point)
+    elif bbox_mode=='split':
+        assert split_num > 0
+        extre_cor = divide_and_get_bounds(label, direction=0, num_parts=split_num, pad=pad) #[n, minpoint, maxpoint]
+        real_extre_point = []
+        for i in range(len(extre_cor)):
+            for ii in range(len(extre_cor[i])):
+                for iii in range(len(extre_cor[i][ii])):
+                    slice_index = extre_cor[i][ii][iii]
+                    while slice_index < label.shape[iii]:
+                        slice_label = label.transpose(iii,iii-2,iii-1)[slice_index]
+                        if np.sum(slice_label) >0:
+                            center_x, center_y = get_center_cor(img=slice_label)
+                            break
+                        else:
+                            slice_index += 1
+                    cor=np.zeros(3)
+                    cor[iii]=extre_cor[i][ii][iii]
+                    cor[iii-2]=center_x
+                    cor[iii-1]=center_y
+                    real_extre_point.append(cor)
+        return np.int16(real_extre_point)
+        
+
 
 def select_extreme_support_cor(label, point_per_slice=2, erosion_num=False, slice_range=2):
     if erosion_num:
@@ -331,12 +389,20 @@ def iou(box1, box2):
     box2 = np.asarray(box2).reshape([-1,1])
     in_h = min(box1[3], box2[3]) - max(box1[0], box2[0])
     in_w = min(box1[4], box2[4]) - max(box1[1], box2[1])
-    in_d =min(box1[5], box2[5]) - max(box1[2], box2[2])
-    inter = 0 if in_h<0 or in_w<0 or in_d<0 else in_h*in_w*in_d
+    in_d = min(box1[5], box2[5]) - max(box1[2], box2[2])
+    inter = 0.00000001 if in_h<0 or in_w<0 or in_d<0 else in_h*in_w*in_d
     union = (box1[3] - box1[0]) * (box1[4] - box1[1])*(box1[5] - box1[2]) + \
             (box2[3] - box2[0]) * (box2[4] - box2[1])*(box2[5] - box2[2]) - inter
     iou = inter / union
     return iou
+
+def wd(box1, box2, spacing):
+    'wall distance, spacing=[h,w,d]'
+    box1 = np.asarray(box1).reshape([2, -1])
+    box2 = np.asarray(box2).reshape([2, -1])
+    spacing = np.asarray(spacing).reshape([1, -1])
+    wall_distance = np.mean(np.abs(box1-box2)*spacing, axis=0)
+    return wall_distance
 
 class RandomPositionCrop(object):
     """
@@ -380,3 +446,10 @@ class RandomPositionCrop(object):
                             random_cor[2]-self.output_size[2]//2:random_cor[2] + self.output_size[2]//2]
         sample['random_crop_image']=image_patch
         return sample
+
+# Custom encoder to handle numpy arrays
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NumpyEncoder, self).default(obj)

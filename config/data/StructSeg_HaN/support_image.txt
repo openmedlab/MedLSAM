@@ -1,5 +1,5 @@
-data/Task1_HaN_OAR/HaN_OAR/1/data.nii.gz
-data/Task1_HaN_OAR/HaN_OAR/10/data.nii.gz
-data/Task1_HaN_OAR/HaN_OAR/11/data.nii.gz
-data/Task1_HaN_OAR/HaN_OAR/12/data.nii.gz
-data/Task1_HaN_OAR/HaN_OAR/13/data.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/1/data.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/10/data.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/11/data.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/12/data.nii.gz
+/mnt/data/smart_health_02/leiwenhui/Data/HaN_OAR/13/data.nii.gz

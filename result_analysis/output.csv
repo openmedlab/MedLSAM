@@ -1,0 +1,45 @@
+~,MedLAM,nnDetection,MIU-VL,MedLAM,nnDetection,MIU-VL
+~,(5-shot),(fully-supervised),(zero-shot),(5-shot),(fully-supervised),(zero-shot)
+Brain Stem,70.3$
+Eye L,$
+Eye R,$
+Lens L,$
+Lens R,17.9$
+Opt Nerve L,$
+Opt Nerve R,$
+Opt Chiasma,9.7$
+Temporal Lobes L,$
+Temporal Lobes R,$
+Pituitary,8.9$
+Parotid Gland L,$
+Parotid Gland R,$
+Inner Ear L,$
+Inner Ear R,$
+Mid Ear L,$
+Mid Ear R,$
+TM Joint L,$
+TM Joint R,$
+Spinal Cord,$
+Mandible L,$
+Mandible R,$
+Average,$
+~,MedLAM,nnDetection,MIU-VL,MedLAM,nnDetection,MIU-VL
+~,(5-shot),(fully-supervised),(zero-shot),(5-shot),(fully-supervised),(zero-shot)
+Liver,$
+Spleen,$
+Kidney L,$
+Kidney R,$
+Stomach,$
+Gallbladder,12.0$
+Esophagus,44.2$
+Pancreas,44.1$
+Duodenum,$
+Colon,$
+Intestine,$
+Adrenal,40.4$
+Rectum,49.3$
+Bladder,55.4$
+Head of Femur L,$
+Head of Femur R,$
+Average,$
+}

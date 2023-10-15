@@ -99,10 +99,41 @@ def get_bound_coordinate(file, pad=[0, 0, 0]):
         minpoint[i] = max(minpoint[i] - pad[i], 0)
     return np.array([minpoint, maxpoint])
 
+def divide_and_get_bounds(file, direction, num_parts, pad=[0, 0, 0]):
+    bounds = []
+    minpoint, maxpoint = get_bound_coordinate(file, pad=pad)
+    step = (maxpoint[direction] - minpoint[direction]) // num_parts
+    
+    for i in range(num_parts):
+        start = minpoint[direction] + i * step
+        end = start + step if i < num_parts - 1 else maxpoint[direction]
+        cur_file = file.copy()
+        if direction == 0:
+            cur_file[:start, :, :] = 0
+            cur_file[end:, :, :] = 0
+        elif direction == 1:
+            cur_file[:, :start, :] = 0
+            cur_file[:, end:, :] = 0
+        elif direction == 2:
+            cur_file[:, :, :start] = 0
+            cur_file[:, :, end:] = 0
+
+        if cur_file.sum() >0: 
+            current_minpoint, current_maxpoint = get_bound_coordinate(cur_file, pad=pad)
+
+        current_minpoint[direction] = start
+        current_maxpoint[direction] = end
+        
+        bounds.append([current_minpoint, current_maxpoint])
+    
+    return np.array(bounds)
+
+
+
 
 def labeltrans(labelpair, file):
     '''
-    :param labelpair: labelpair list
+    :param labelpair: labelpair list [[], ..., []]
     :param file: np array
     :return:
     '''
@@ -178,12 +209,22 @@ def resize_Multi_label_to_given_shape(volume, zoom_factor=None, target_shape=Non
         volume = volume.long()
     else:
         volume = torch.from_numpy(volume.copy()).long()
-    oh_volume = torch.nn.functional.one_hot(volume, -1).float().permute(3,0,1,2).unsqueeze(0)
-    if zoom_factor is not None:
-        output = torch.nn.functional.interpolate(oh_volume, scale_factor=list(zoom_factor), mode='trilinear')
-    elif target_shape is not None:
-        output = torch.nn.functional.interpolate(oh_volume, size=target_shape, mode='trilinear')
-    else:
-        raise ValueError('zoom_factor or target_shape must be given')
+    if volume.dim() == 3:
+        oh_volume = torch.nn.functional.one_hot(volume, -1).float().permute(3,0,1,2).unsqueeze(0)
+        if zoom_factor is not None:
+            output = torch.nn.functional.interpolate(oh_volume, scale_factor=list(zoom_factor), mode='trilinear')
+        elif target_shape is not None:
+            output = torch.nn.functional.interpolate(oh_volume, size=target_shape, mode='trilinear')
+        else:
+            raise ValueError('zoom_factor or target_shape must be given')
+    elif volume.dim() == 2:
+        oh_volume = torch.nn.functional.one_hot(volume, -1).float().permute(2,0,1).unsqueeze(0)
+        if zoom_factor is not None:
+            output = torch.nn.functional.interpolate(oh_volume, scale_factor=list(zoom_factor), mode='bilinear')
+        elif target_shape is not None:
+            output = torch.nn.functional.interpolate(oh_volume, size=target_shape, mode='bilinear')
+        else:
+            raise ValueError('zoom_factor or target_shape must be given')
+    
     output = torch.argmax(output, dim=1).data.squeeze()
     return output
