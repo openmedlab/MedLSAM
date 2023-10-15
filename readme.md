@@ -71,6 +71,10 @@ This repository provides the official implementation of [MedLSAM: Localize and S
     <a href="https://"><img width="1000px" height="auto" src="https://https://github.com/openmedlab/MedLSAM/blob/main/medlsam.jpg"></a>
 </div> -->
 
+## Feedback and Contact
+
+- Email: lyc745307452@gmail.com
+- Wechat: lyc4560147
 
 ## Get Started
 
@@ -181,10 +185,6 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_con
 ## To do list
 - [ ] Support scribble prompts
 - [ ] Support MobliSAM
-## Feedback and Contact
-
-- Email: lyc745307452@gmail.com
-- Wechat: lyc4560147
 
 ## 🛡️ License
 
