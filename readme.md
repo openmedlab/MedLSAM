@@ -149,7 +149,9 @@ Each of the parameters is explained as follows:
 - `medlam_load_path`: The path to load the pretrained MedLAM model weights.
 - `vit_load_path`: The path to load the pretrained vision transformer model weights, **only required for MedLSAM**. You can change it to `checkpoint/sam_vit_b_01ec64.pth` to use the SAM model as segmentation basis.
 
-<img src="fig/wpl_spl.png" alt="MedLSAM Image" width="400" height="300"/>
+<div align="center">
+  <img src="fig/wpl_spl.png" width="80%">
+</div>
 
 *Fig.2 Comparison between Whole-Patch Localization (WPL) and Sub-Patch Localization (SPL) strategies.*
 
