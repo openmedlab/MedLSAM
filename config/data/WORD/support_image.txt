@@ -1,5 +1,5 @@
-/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/imagesTr/word_0010.nii.gz
-/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/imagesTr/word_0036.nii.gz
-/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/imagesTr/word_0053.nii.gz
-/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/imagesTr/word_0064.nii.gz
-/mnt/data/smart_health_02/leiwenhui/Data/WORD-V0.1.0/imagesTr/word_0113.nii.gz
+data/WORD-V0.1.0/imagesTr/word_0010.nii.gz
+data/WORD-V0.1.0/imagesTr/word_0036.nii.gz
+data/WORD-V0.1.0/imagesTr/word_0053.nii.gz
+data/WORD-V0.1.0/imagesTr/word_0064.nii.gz
+data/WORD-V0.1.0/imagesTr/word_0113.nii.gz
