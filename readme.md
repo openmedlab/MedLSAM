@@ -1,4 +1,4 @@
-# MedLSAM: Localize and Segment Anything Model for 3D Medical Images
+# [MedLSAM: Localize and Segment Anything Model for 3D Medical Images](https://arxiv.org/abs/2306.14752)
 <!-- select Model and/or Data and/or Code as needed>
 ### Welcome to OpenMEDLab! 👋
 
@@ -48,8 +48,6 @@
 [![GitHub license](https://img.shields.io/github/license/opendilab/DI-engine)](https://github.com/opendilab/DI-engine/blob/master/LICENSE) -->
 
 ## Key Features
-
-This repository provides the official implementation of [MedLSAM: Localize and Segment Anything Model for 3D Medical Images](https://arxiv.org/abs/2306.14752)
 
 - **Foundation Model for 3D Medical Image Localization**: MedLAM: MedLSAM introduces MedLAM as a foundational model for the localization of 3D medical images.
 - **First Fully-Automatic Medical Adaptation of SAM**: MedLSAM is the first complete medical adaptation of the Segment Anything Model (SAM). The primary goal of this work is to significantly reduce the annotation workload in medical image segmentation.
