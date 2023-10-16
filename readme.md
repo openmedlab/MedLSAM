@@ -192,8 +192,8 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_SPL_Inference.py --config_file path/to/you
 Example:
 ```bash
 CUDA_VISIBLE_DEVICES=0 python MedLSAM_WPL_Inference.py --config_file config/test_config/test_structseg_medlam_wpl_medsam.txt
-CUDA_VISIBLE_DEVICES=0 python MedLSAM_WPL_Inference.py --config_file config/test_config/test_structseg_medlam_spl_medsam.txt
-CUDA_VISIBLE_DEVICES=0 python MedLSAM_SPL_Inference.py --config_file config/test_config/test_structseg_medlam_wpl_sam.txt
+CUDA_VISIBLE_DEVICES=0 python MedLSAM_WPL_Inference.py --config_file config/test_config/test_structseg_medlam_wpl_medsam.txt
+CUDA_VISIBLE_DEVICES=0 python MedLSAM_SPL_Inference.py --config_file config/test_config/test_structseg_medlam_spl_sam.txt
 CUDA_VISIBLE_DEVICES=0 python MedLSAM_SPL_Inference.py --config_file config/test_config/test_structseg_medlam_spl_sam.txt
 ```
 
