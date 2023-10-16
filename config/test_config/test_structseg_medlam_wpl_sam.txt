@@ -1,0 +1,18 @@
+[data]
+support_image_ls      =  config/data/StructSeg_HaN/support_image.txt
+support_label_ls      =  config/data/StructSeg_HaN/support_label.txt
+query_image_ls        =  config/data/StructSeg_HaN/query_image.txt
+query_label_ls        =  config/data/StructSeg_HaN/query_label.txt
+gt_slice_threshold    = 10
+fg_class              = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
+bbox_mode             = WPL
+slice_interval        = False
+seg_save_path         = result/npz/StructSeg/medlam_sam
+seg_png_save_path     = result/png/StructSeg/medlam_sam
+
+[vit]
+net_type                = vit_b
+
+[weight]
+medlam_load_path   = checkpoint/medlam.pth
+vit_load_path  = checkpoint/sam_vit_b_01ec64.pth

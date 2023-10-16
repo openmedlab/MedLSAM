@@ -51,13 +51,14 @@
 
 This repository provides the official implementation of [MedLSAM: Localize and Segment Anything Model for 3D Medical Images](https://arxiv.org/abs/2306.14752)
 
-- **First Fully-Automatic Medical Adaptation of SAM**: MedLSAM is the first complete medical adaptation of the Segment Anything Model (SAM). The primary goal of this work is to significantly reduce the annotation workload in medical image segmentation.
 - **Foundation Model for 3D Medical Image Localization**: MedLAM: MedLSAM introduces MedLAM as a foundational model for the localization of 3D medical images.
+- **First Fully-Automatic Medical Adaptation of SAM**: MedLSAM is the first complete medical adaptation of the Segment Anything Model (SAM). The primary goal of this work is to significantly reduce the annotation workload in medical image segmentation.
 - **Segment Any Anatomy Target Without Additional Annotation**: MedLSAM is designed to segment any anatomical target in 3D medical images without the need for further annotations, contributing to the automation and efficiency of the segmentation process.
 
 
-<!-- [Code] may link to your project at your institute>
+## Updates
 
+- 2023.10.15: Accelerate the inference speed. Add Sub-Patch Localization (SPL).
 
 <!-- give a introduction of your project -->
 ## Details
@@ -66,7 +67,7 @@ This repository provides the official implementation of [MedLSAM: Localize and S
 
 <!-- Insert a pipeline of your algorithm here if got one -->
 ![MedLSAM Image](fig/medlsam.jpg)
-
+*Fig.1 The overall segmentation pipeline of MedLSAM.*
 <!--<div align="center">
     <a href="https://"><img width="1000px" height="auto" src="https://https://github.com/openmedlab/MedLSAM/blob/main/medlsam.jpg"></a>
 </div> -->
@@ -97,7 +98,7 @@ Download [MedLAM checkpoint](https://drive.google.com/file/d/1cwoHS5yNPI22-jgMno
 
 ## Inference
 ### GPU requirement
-We recommend using a GPU with 8GB or more memory for inference.
+We recommend using a GPU with 12GB or more memory for inference.
 
 ### Data preparation
 - [StructSeg Task1 HaN OAR](https://drive.google.com/file/d/1tlv79tgK5ETBFUB3_vgipBPOwZLmpbi8/view?usp=drive_link) 
@@ -118,6 +119,8 @@ support_label_ls      =  config/data/StructSeg_HaN/support_label.txt
 query_image_ls        =  config/data/StructSeg_HaN/query_image.txt
 query_label_ls        =  config/data/StructSeg_HaN/query_label.txt
 gt_slice_threshold    = 10
+bbox_mode             = split
+slice_interval        = 2
 fg_class              = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
 seg_save_path         = result/npz/StructSeg
 seg_png_save_path     = result/png/StructSeg
@@ -137,12 +140,19 @@ Each of the parameters is explained as follows:
 - `query_image_ls`: The path to the list of query image files.
 - `query_label_ls`: The path to the list of query label files.
 - `gt_slice_threshold`: The threshold value for ground truth slice selection.
+- `bbox_mode`: The bounding box mode. It could be `SPL` (Sub-Patch Localization) or `WPL` (Whole-Patch Localization), as shown in Fig.2.
+- `slice_interval`: Specifies the number of slices in a sub-patch. A smaller value results in more patches. This parameter should be of type `int`, and its value should be greater than 0. **Applicable only for Sub-Patch Localization (SPL), set to `False` for Whole-Patch Localization (WPL)**.
 - `fg_class`: The list of foreground class to be used for localization and segmentation. This could be a list of integers indicating the class labels. You can only select a part of them as target classes.
 - `seg_save_path`: The path to save the segmentation results in .npz format, **only required for MedLSAM**.
 - `seg_png_save_path`: The path to save the segmentation results in .png format, **only required for MedLSAM**.
 - `net_type`: The type of vision transformer model to be used, **only required for MedLSAM**. By default, this is set to vit_b.
 - `medlam_load_path`: The path to load the pretrained MedLAM model weights.
 - `vit_load_path`: The path to load the pretrained vision transformer model weights, **only required for MedLSAM**. You can change it to `checkpoint/sam_vit_b_01ec64.pth` to use the SAM model as segmentation basis.
+
+<img src="fig/wpl_spl.png" alt="MedLSAM Image" width="400" height="300"/>
+
+*Fig.2 Comparison between Whole-Patch Localization (WPL) and Sub-Patch Localization (SPL) strategies.*
+
 
 ### Inference
 - MedLAM (**Localize any anatomy target**)
@@ -155,14 +165,15 @@ CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file config/test_conf
 CUDA_VISIBLE_DEVICES=0 python MedLAM_Inference.py --config_file config/test_config/test_word_medlam.txt
 ```
 
-- MedLSAM (**Localize and segment any anatomy target**)
+- MedLSAM (**Localize and segment any anatomy target with WPL/SPL**)
 ```bash
-CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file path/to/your/test_medlsam_config.txt
+CUDA_VISIBLE_DEVICES=0 python MedLSAM_WPL_Inference.py --config_file path/to/your/test_medlsam_config.txt
+CUDA_VISIBLE_DEVICES=0 python MedLSAM_SPL_Inference.py --config_file path/to/your/test_medlsam_config.txt
 ```
 Example:
 ```bash
-CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_config/test_structseg_medlam_medsam.txt
-CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_config/test_structseg_medlam_sam.txt
+CUDA_VISIBLE_DEVICES=0 python MedLSAM_WPL_Inference.py --config_file config/test_config/test_structseg_medlam_wpl_medsam.txt
+CUDA_VISIBLE_DEVICES=0 python MedLSAM_SPL_Inference.py --config_file config/test_config/test_structseg_medlam_spl_sam.txt
 ```
 
 ### Results
@@ -176,10 +187,7 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_Inference.py --config_file config/test_con
 
 
 <div align="center">
-  <img src="fig/structseg_dsc.png" width="90%">
-</div>
-<div align="center">
-  <img src="fig/word_dsc.png" width="90%">
+  <img src="fig/dsc.png" width="100%">
 </div>
 
 ## To do list

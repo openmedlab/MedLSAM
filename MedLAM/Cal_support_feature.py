@@ -32,13 +32,13 @@ def process_support(RD, support_volume_ls, support_label_ls, patch_size, fg_clas
     print('\n #### start to extract support feature for each class #### \n')
     for iidx in trange(len(fg_class_ls)):
         for idx in range(len(support_volume_ls)):
-            if bbox_mode == 'split':
+            if bbox_mode == 'SPL': # Sub-Patch Localization
                 if min(z_length_ls[iidx]) > slice_interval:
                     split_num = min(min(z_length_ls[iidx])//slice_interval, 6)
                     support_extreme_cor = extract_fg_cor(1*(cur_support_label_ls[idx]==fg_class_ls[iidx]), bbox_mode, erosion_num=False, split_num=split_num)
                 else:
                     support_extreme_cor = extract_fg_cor(1*(cur_support_label_ls[idx]==fg_class_ls[iidx]), 'extreme', erosion_num=False)
-            elif bbox_mode == 'extreme':
+            elif bbox_mode == 'WPL': # Whole-Patch Localization
                 support_extreme_cor = extract_fg_cor(1*(cur_support_label_ls[idx]==fg_class_ls[iidx]), 'extreme', erosion_num=False)
             support_image_batch, support_label_batch = [], []
             for i in range(support_extreme_cor.shape[0]): 

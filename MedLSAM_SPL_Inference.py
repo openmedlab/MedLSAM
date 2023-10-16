@@ -103,7 +103,7 @@ parser.add_argument('-c', '--config_file', type=str, help='path to the config fi
 args = parser.parse_args()
 config_file = parse_config(args.config_file)
 
-#% load MedLSAM model
+#% load MedLSAM model. Apply Sub-Patch Localization (SPL)
 ana_det = AnatomyDetection(args.config_file)
 sam_model_tune = sam_model_registry[config_file['vit']['net_type']](checkpoint=config_file['weight']['vit_load_path']).to('cuda:0')
 sam_trans = ResizeLongestSide(sam_model_tune.image_encoder.img_size)

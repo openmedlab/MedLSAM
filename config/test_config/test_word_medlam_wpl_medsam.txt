@@ -1,0 +1,18 @@
+[data]
+support_image_ls      =  config/data/WORD/support_image.txt
+support_label_ls      =  config/data/WORD/support_label.txt
+query_image_ls        =  config/data/WORD/query_image.txt
+query_label_ls        =  config/data/WORD/query_label.txt
+gt_slice_threshold    = 10
+fg_class              = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+bbox_mode             = WPL
+slice_interval        = False
+seg_save_path         = result/npz/WORD/medlam_medsam
+seg_png_save_path     = result/png/WORD/medlam_medsam
+
+[vit]
+net_type                = vit_b
+
+[weight]
+medlam_load_path   = checkpoint/medlam.pth
+vit_load_path  = checkpoint/medsam_vit_b.pth
