@@ -106,7 +106,7 @@ Note: You can also download other CT datasets and place them any place you want.
 
 After downloading the datasets, you should sort the data into "support" and "query" groups. This does not require moving the actual image files. Rather, you need to create separate lists of file paths for each group.
 
-**For each group ("support" and "query"), create a .txt file listing the paths to the image files, and another .txt file listing the paths to the corresponding label files. Ensure that the ordering of images and labels aligns in both lists.** These lists will be used to direct MedLSAM to the appropriate files during the inference process.
+**For each group ("support" and "query"), create a .txt file listing the paths to the image files, and another .txt file listing the paths to the corresponding label files. Ensure that the ordering of images and labels aligns in both lists.** These lists will be used to direct MedLSAM to the appropriate files during the inference process. 
 
 ### Config preparation
 **MedLAM** and **MedLSAM** load their configurations from a .txt file. The structure of the file is as follows:
