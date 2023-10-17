@@ -57,7 +57,7 @@
 ## Updates
 
 - 2023.10.15: Accelerate the inference speed. Add Sub-Patch Localization (SPL).
-
+- 2023.07.01: Code released.
 <!-- give a introduction of your project -->
 ## Details
 
