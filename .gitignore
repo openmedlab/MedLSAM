@@ -15,3 +15,4 @@ result/*
 
 # Ignore all the files in config/my_test_config
 config/my_test_config/*
+config/my_test_data/*

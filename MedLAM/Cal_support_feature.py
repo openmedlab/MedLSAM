@@ -16,7 +16,7 @@ from data_process.data_process_func import *
 from MedLAM.detection_functions import *
 
 
-def process_support(RD, support_volume_ls, support_label_ls, patch_size, fg_class_ls, bbox_mode='extreme', slice_interval=4):
+def process_support(RD, support_volume_ls, support_label_ls, patch_size, fg_class_ls, bbox_mode='SPL', slice_interval=4):
     cur_support_image_ls, cur_support_label_ls = [], []
     z_length_ls = [[] for _ in range(len(fg_class_ls))]
     print('\n #### start to preprocess support volume #### \n ')
@@ -35,7 +35,7 @@ def process_support(RD, support_volume_ls, support_label_ls, patch_size, fg_clas
             if bbox_mode == 'SPL': # Sub-Patch Localization
                 if min(z_length_ls[iidx]) > slice_interval:
                     split_num = min(min(z_length_ls[iidx])//slice_interval, 6)
-                    support_extreme_cor = extract_fg_cor(1*(cur_support_label_ls[idx]==fg_class_ls[iidx]), bbox_mode, erosion_num=False, split_num=split_num)
+                    support_extreme_cor = extract_fg_cor(1*(cur_support_label_ls[idx]==fg_class_ls[iidx]), 'split', erosion_num=False, split_num=split_num)
                 else:
                     support_extreme_cor = extract_fg_cor(1*(cur_support_label_ls[idx]==fg_class_ls[iidx]), 'extreme', erosion_num=False)
             elif bbox_mode == 'WPL': # Whole-Patch Localization
