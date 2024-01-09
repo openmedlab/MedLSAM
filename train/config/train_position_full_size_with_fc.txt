@@ -1,0 +1,29 @@
+[data]
+train_image_list      = train/config/pre_nii.txt
+valid_image_list      = train/config/pre_nii.txt
+iter_num              = 1000
+batch_size            = 4
+patch_size            = [64, 64, 64]
+class_num             = 3
+distance_ratio        = [1500, 600, 600]
+
+[network]
+net_type                = MedLAM
+net_name                = MedLAM
+base_feature_number     = 24
+drop_rate               = 0.2
+dilation                = 1
+class_num               = 3
+input_channel           = 1
+
+[training]
+load_pretrained_model = False
+pretrained_model_path = 
+learning_rate      = 1e-4
+decay              = 1e-4
+maximal_epoch      = 300
+start_iteration    = 0
+print_step         = 100
+random_seed        = 2023
+model_save_name  = train/checkpoint/MedLAM
+best_loss          = 1000

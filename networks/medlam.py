@@ -10,7 +10,6 @@ import numpy as np
 class MedLAM(nn.Module):
     def __init__(self,  inc=1, patch_size=1, n_classes=5, base_chns=12, droprate=0, norm='in', depth = False, dilation=1):
         super(MedLAM, self).__init__()
-        self.model_name = "seg"
         self.upsample = nn.Upsample(scale_factor=2, mode='trilinear')  # 1/4(h,h)
         self.downsample = nn.MaxPool3d(2, 2)  # 1/2(h,h)
         self.drop = nn.Dropout(droprate)

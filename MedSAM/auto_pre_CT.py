@@ -40,7 +40,7 @@ def process_slice(i, z_min, z_max, gt_data, image_data_pre, image_size, gt_slice
 
     return i, img_slice_i, gt_slice_i, img_embedding
 
-def preprocess_ct(gt_path, nii_path, label_id_ls, image_size, sam_model=None, device=0, gt_slice_threshold=0, z_min=None, z_max=None, padding=0):
+def preprocess_ct(gt_path, nii_path, label_id_ls, image_size, sam_model=None, gt_slice_threshold=0, z_min=None, z_max=None, padding=0):
     # do not select the z index
     gt_sitk = sitk.ReadImage(gt_path)
     gt_data = sitk.GetArrayFromImage(gt_sitk).astype(np.int16)

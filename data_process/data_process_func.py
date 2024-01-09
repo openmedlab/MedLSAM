@@ -176,21 +176,25 @@ def load_and_pre_ct(image_path, mode='image'):
 
 
 def img_multi_thresh_normalized(file, thresh_lis=[0], norm_lis=[0], data_type=np.float32):
-    # 创建和 file 大小相同的全零数组
+    """
+    this Segmental Linear Normalization Function was proposed in "Automatic Segmentation of Organs-at-Risk from Head-and-Neck 
+    CT using Separable Convolutional Neural Network with Hard-Region-Weighted Loss"
+    """
+    # Creates an all-zero array of the same size as the file
     new_file = np.zeros_like(file, dtype=data_type)
     thresh_lis = np.array(thresh_lis)
     norm_lis = np.array(norm_lis)
     
-    # 计算每个阈值之间的斜率和截距
+    # The slope and intercept between each threshold were calculated
     slopes = (norm_lis[1:] - norm_lis[:-1]) / (thresh_lis[1:] - thresh_lis[:-1])
     intercepts = norm_lis[:-1]
     
-    # 对于每个阈值区间，使用广播来计算结果
+    # For each threshold interval, a broadcast was used to calculate the result
     for i in range(len(thresh_lis) - 1):
         mask = (file >= thresh_lis[i]) & (file < thresh_lis[i + 1])
         new_file[mask] = slopes[i] * (file[mask] - thresh_lis[i]) + intercepts[i]
     
-    # 对于大于最后一个阈值的所有元素，直接赋值
+    # For all elements larger than the last threshold, a value is assigned directly
     new_file[file >= thresh_lis[-1]] = norm_lis[-1]
     
     return new_file
@@ -228,3 +232,34 @@ def resize_Multi_label_to_given_shape(volume, zoom_factor=None, target_shape=Non
     
     output = torch.argmax(output, dim=1).data.squeeze()
     return output
+
+def load_nifty_volume_as_array(filename, transpose=True, return_spacing=False, respacing=False, target_spacing=1,
+                               mode='image', order=3):
+    """
+    load nifty image into numpy array, and transpose it based on the [z,y,x] axis order
+    The output array shape is like [Depth, Height, Width]
+    inputs:
+        filename: the input file name, should be *.nii or *.nii.gz
+    outputs:
+        data: a numpy data array
+    """
+    img = nibabel.load(filename)
+    data = img.get_fdata()
+    spacing = list(img.header.get_zooms())
+    if transpose:
+        data = data.transpose(2, 1, 0)
+        spacing.reverse()
+    if respacing:
+        zoomfactor = list(np.array(spacing) / np.array(target_spacing))
+        spacing = target_spacing
+        if mode == 'image':
+            data = ndimage.zoom(data, zoom=zoomfactor, order=order)
+        elif mode == 'label':
+            data = np.int8(data)
+            data = np.int8(resize_Multi_label_to_given_shape(data, zoom_factor=zoomfactor))
+        else:
+            ValueError('Please choose the right data mode! ( \'label\', or \'image\')')
+    if return_spacing:
+        return data, spacing
+    else:
+        return data
