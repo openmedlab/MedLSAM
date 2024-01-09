@@ -9,7 +9,6 @@ distance_ratio        = [1500, 600, 600]
 
 [network]
 net_type                = MedLAM
-net_name                = MedLAM
 base_feature_number     = 24
 drop_rate               = 0.2
 dilation                = 1

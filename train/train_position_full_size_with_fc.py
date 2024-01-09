@@ -39,7 +39,7 @@ def train(config_file):
     logger.print('1.Load parameters')
     config = parse_config(config_file)
     config_data  = config['data']    # data config, e.g. data_shape,batch_size
-    config_net  = config['network'] # net config, e.g. net_name,base_feature_name,class_num
+    config_net  = config['network'] # net config, e.g. net_type,base_feature_name,class_num
     config_train = config['training']
     patch_size = config_data['patch_size']
     batch_size = config_data.get('batch_size', 4)
