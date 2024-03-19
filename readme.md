@@ -219,7 +219,8 @@ CUDA_VISIBLE_DEVICES=0 python MedLSAM_SPL_Inference.py --config_file config/test
 ```bash 
 python train/train_position_full_size_with_fc.py -c train/config/train_position_full_size_with_fc.txt
 ```
-- the checkpoint will be saved in `train/checkpoint`
+- the tar checkpoint will be saved in `train/checkpoint`. It contains both the network weights and the optimizer states. 
+- for inference, you need to extract the network weights from the checkpoint and save it as pth file. you can run `python train/extract_weights.py -p train/checkpoint/your.tar` to do this (change the tar path to your file). It will automatically extract the network weights from the checkpoint and save them as `checkpoint/medlam.pth`.
 
 ## To do list
 - [ ] Support scribble prompts
