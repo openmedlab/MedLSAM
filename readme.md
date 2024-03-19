@@ -73,7 +73,6 @@
 ## Feedback and Contact
 
 - Email: lyc745307452@gmail.com
-- Wechat: lyc4560147
 
 ## Get Started
 

@@ -181,7 +181,7 @@ def img_multi_thresh_normalized(file, thresh_lis=[0], norm_lis=[0], data_type=np
     CT using Separable Convolutional Neural Network with Hard-Region-Weighted Loss"
     """
     # Creates an all-zero array of the same size as the file
-    new_file = np.zeros_like(file, dtype=data_type)
+    new_file = np.zeros_like(file, dtype=data_type)+norm_lis[0]
     thresh_lis = np.array(thresh_lis)
     norm_lis = np.array(norm_lis)
     
