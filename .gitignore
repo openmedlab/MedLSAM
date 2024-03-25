@@ -19,3 +19,6 @@ config/my_test_data/*
 
 # Ignore all the comparison methods
 comparison_methods
+
+# Ignore result_analysis code
+result_analysis
