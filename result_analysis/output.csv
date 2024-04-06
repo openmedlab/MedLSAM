@@ -1,44 +1,44 @@
-~,MedLAM,nnDetection,MIU-VL,MedLAM,nnDetection,MIU-VL
-~,(5-shot),(fully-supervised),(zero-shot),(5-shot),(fully-supervised),(zero-shot)
-Brain Stem,70.3$
-Eye L,$
-Eye R,$
-Lens L,$
-Lens R,17.9$
+~,
+~,SAM,MedSAM,SAM,MedSAM,SAM,MedSAM,SAM,MedSAM
+Brain Stem,63.5$
+Eye L,64.5$
+Eye R,67.3$
+Lens L,15.9$
+Lens R,13.8$
 Opt Nerve L,$
 Opt Nerve R,$
-Opt Chiasma,9.7$
-Temporal Lobes L,$
-Temporal Lobes R,$
-Pituitary,8.9$
-Parotid Gland L,$
-Parotid Gland R,$
-Inner Ear L,$
+Opt Chiasma,11.4$
+Temporal Lobes L,28.2$
+Temporal Lobes R,24.1$
+Pituitary,$
+Parotid Gland L,15.5$
+Parotid Gland R,17.2$
+Inner Ear L,40.4$
 Inner Ear R,$
 Mid Ear L,$
 Mid Ear R,$
-TM Joint L,$
+TM Joint L,38.3$
 TM Joint R,$
-Spinal Cord,$
+Spinal Cord,27.9$
 Mandible L,$
 Mandible R,$
-Average,$
-~,MedLAM,nnDetection,MIU-VL,MedLAM,nnDetection,MIU-VL
-~,(5-shot),(fully-supervised),(zero-shot),(5-shot),(fully-supervised),(zero-shot)
+Average,39.1$
+~,
+~,SAM,MedSAM,SAM,MedSAM,SAM,MedSAM,SAM,MedSAM
 Liver,$
 Spleen,$
 Kidney L,$
 Kidney R,$
 Stomach,$
-Gallbladder,12.0$
-Esophagus,44.2$
-Pancreas,44.1$
+Gallbladder,$
+Esophagus,$
+Pancreas,$
 Duodenum,$
-Colon,$
+Colon,25.6$
 Intestine,$
-Adrenal,40.4$
-Rectum,49.3$
-Bladder,55.4$
+Adrenal,3.3$
+Rectum,$
+Bladder,$
 Head of Femur L,$
 Head of Femur R,$
 Average,$
