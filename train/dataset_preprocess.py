@@ -4,8 +4,6 @@ import sys
 sys.path.append(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))  
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import os
-
 current_directory = os.path.dirname(os.path.abspath(__file__))
 join = os.path.join
 from tqdm import trange

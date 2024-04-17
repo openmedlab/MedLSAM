@@ -22,3 +22,9 @@ comparison_methods
 
 # Ignore result_analysis code
 result_analysis
+
+# Ignore abnormal analysis code
+MedLAM_abnormal_Inference.py
+data_process/FLARE23_transfer_label.py
+nnDet_WPL_Inference.py
+data_process/Create_file_ls.py
