@@ -178,7 +178,8 @@ for id in trange(len(nii_pathes)):
                             sam_segs[img_id] = seg_mask
                             sam_bboxes[img_id] = bbox
                             img_id_ls.append(img_id)
-                            pred_key_array[img_id] = (cv2.resize(seg_prob, pred_key_array[img_id].shape, interpolation=cv2.INTER_NEAREST)> 0.5).astype(np.uint8)
+                            height, width = pred_key_array[img_id].shape
+                            pred_key_array[img_id] = (cv2.resize(seg_prob, (width, height), interpolation=cv2.INTER_NEAREST)> 0.5).astype(np.uint8)
                             slice_dice, slice_intersect, slice_volume = compute_dice(seg_mask>0, ngt2D>0)
                             sam_slice_dice_scores[img_id] = slice_dice
                     if len(img_id_ls) > 0:

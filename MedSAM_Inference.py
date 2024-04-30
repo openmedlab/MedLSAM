@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))  
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import os
+current_directory = os.path.dirname(os.path.abspath(__file__))
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -108,7 +109,9 @@ nii_pathes = read_file_list(config_file['data']['query_image_ls'])
 gt_pathes = read_file_list(config_file['data']['query_label_ls'])
 os.makedirs(config_file['data']['seg_png_save_path'], exist_ok=True)
 os.makedirs(config_file['data']['seg_save_path'], exist_ok=True)
-os.makedirs('result/dsc', exist_ok=True)
+os.makedirs(f'{current_directory}/result/json', exist_ok=True)
+os.makedirs(f'{current_directory}/result/dsc', exist_ok=True)
+os.makedirs(f'{current_directory}/result/hd95', exist_ok=True)
 
 sam_dice_scores = {key:[] for key in config_file['data']['fg_class']}
 sam_hd95_scores = {key:[] for key in config_file['data']['fg_class']}
@@ -159,7 +162,8 @@ for id in trange(len(nii_pathes)):
                     seg_mask, seg_prob = finetune_model_predict(ori_img, bbox, sam_trans, sam_model_tune)
                     sam_segs[img_id] = seg_mask
                     sam_bboxes[img_id] = bbox
-                    pred_key_array[img_id] = (cv2.resize(seg_prob, pred_key_array[img_id].shape, interpolation=cv2.INTER_NEAREST)> 0.5).astype(np.uint8)
+                    height, width = pred_key_array[img_id].shape
+                    pred_key_array[img_id] = (cv2.resize(seg_prob, (width, height), interpolation=cv2.INTER_NEAREST)> 0.5).astype(np.uint8)
                     # these 2D dice scores are for debugging purpose. 
                     # 3D dice scores should be computed for 3D images
                     slice_dice, slice_intersect, slice_volume = compute_dice(seg_mask>0, ngt2D>0)
@@ -209,20 +213,17 @@ for id in trange(len(nii_pathes)):
     time2 = time.time()
     print('segment time: ', time2 - time1)
     print('total time: ', time2 - time0)
-#% save dice scores
-for key in config_file['data']['fg_class']:
-    print('DSC for class {}: {:.3f}'.format(key, np.mean(sam_dice_scores[key])), 'HD95 for class {}: {:.3f}'.format(key, np.mean(sam_hd95_scores[key])))
-
-# save the result as JSON
-os.makedirs('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/json', exist_ok=True)
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','dsc_')), 'w') as f:
+    
+    
+# save all the result as JSON
+with open(join(f'{current_directory}/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','dsc_')), 'w') as f:
     json.dump(sam_dice_scores, f, cls=NumpyEncoder)
 
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','hd95_')), 'w') as f:
+with open(join(f'{current_directory}/result/json', '{0:}').format(os.path.basename(args.config_file).replace('test_','hd95_')), 'w') as f:
     json.dump(sam_hd95_scores, f, cls=NumpyEncoder)
 
-#% save dice scores as txt
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
+#% save mean+-std dice scores as txt
+with open(join(f'{current_directory}/result/dsc', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
     for key in config_file['data']['fg_class']:
         # Check if sam_dice_scores[key] is a list or numpy array
         if isinstance(sam_dice_scores[key], (list, np.ndarray)) and len(sam_dice_scores[key]) > 0:
@@ -232,8 +233,8 @@ with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/dsc', '
         else:
             print("sam_dice_scores[{}] is not a list or numpy array or it is empty".format(key))
 
-#% save hd95 scores as txt
-with open(join('/mnt/data/smart_health_02/leiwenhui/Code/MedRLSAM/result/hd95', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
+#% save mean+-std hd95 scores as txt
+with open(join(f'{current_directory}/result/hd95', '{0:}').format(os.path.basename(args.config_file).replace('test_','')), 'w') as f:
     for key in config_file['data']['fg_class']:
         # Check if sam_hd95_scores[key] is a list or numpy array
         if isinstance(sam_hd95_scores[key], (list, np.ndarray)) and len(sam_hd95_scores[key]) > 0:

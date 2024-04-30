@@ -86,3 +86,48 @@ def preprocess_ct(gt_path, nii_path, label_id_ls, image_size, sam_model=None, gt
         return imgs, gts, img_embeddings
     else:
         return imgs, gts
+    
+def preprocess_nib_ct(gt_path, nii_path, label_id_ls, image_size, sam_model=None, gt_slice_threshold=0, z_min=None, z_max=None, padding=0):
+    # do not select the z index
+    gt_data = load_nifty_volume_as_array(gt_path)
+    label_id_pair = [[label_id_ls[i], i+1] for i in range(len(label_id_ls))]
+    reverse_label_id_pair = [[i+1, label_id_ls[i]] for i in range(len(label_id_ls))]
+    gt_data = labeltrans(label_id_pair, gt_data)
+    if np.sum(1*(gt_data>0))>10:
+        imgs = {}
+        gts =  {}
+        img_embeddings = []
+        image_data = load_nifty_volume_as_array(nii_path)
+        # nii preprocess start
+        lower_bound = -500
+        upper_bound = 1000
+        image_data_pre = np.clip(image_data, lower_bound, upper_bound)
+        image_data_pre = (image_data_pre - np.min(image_data_pre))/(np.max(image_data_pre)-np.min(image_data_pre))*255.0
+        image_data_pre[image_data==0] = 0
+        image_data_pre = np.int32(image_data_pre)
+        z_index, _, _ = np.where(gt_data>0)
+        if z_min is None:
+            z_min = np.min(z_index)
+        else:
+            z_min = np.int32(max(0, z_min-padding))
+        if z_max is None:
+            z_max = np.max(z_index)
+        else:
+            z_max = np.int32(min(gt_data.shape[0], z_max+padding))
+
+        with ThreadPoolExecutor(16) as executor:
+            futures = [executor.submit(process_slice, i, z_min, z_max, gt_data, image_data_pre, image_size, gt_slice_threshold, sam_model, reverse_label_id_pair) for i in range(gt_data.shape[0])]
+            
+            for future in concurrent.futures.as_completed(futures):
+                result = future.result()
+                if result is not None:
+                    i, img_slice_i, gt_slice_i, img_embedding = result
+                    imgs[i] = img_slice_i
+                    gts[i] = gt_slice_i
+                    if img_embedding is not None:
+                        img_embeddings.append(img_embedding)
+
+    if sam_model is not None:
+        return imgs, gts, img_embeddings
+    else:
+        return imgs, gts
